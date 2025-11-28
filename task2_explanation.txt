@@ -1,0 +1,167 @@
+================================================================================
+TASK 2 DELIVERABLE: Explanation of Training Component Inputs and Outputs
+================================================================================
+
+Component Name: model_training
+Location: src/pipeline_components.py
+Function: model_training()
+
+--------------------------------------------------------------------------------
+INPUTS
+--------------------------------------------------------------------------------
+
+1. train_data_path (str)
+   - Type: String (file path)
+   - Description: Path to the preprocessed training data CSV file
+   - Source: Output from the data_preprocessing component
+   - Format: CSV file containing scaled features and target variable
+   - Expected Structure:
+     * Features: All columns except "TARGET"
+     * Target: Column named "TARGET" (continuous values for regression)
+     * Data: Already scaled using StandardScaler from preprocessing step
+   - Example: "artifacts/train_data.csv"
+   - Required: Yes
+
+--------------------------------------------------------------------------------
+OUTPUTS
+--------------------------------------------------------------------------------
+
+1. model_output (str)
+   - Type: String (file path)
+   - Description: Path to the saved trained model file
+   - Format: Joblib serialized model file (.joblib)
+   - Location: Saved in "artifacts/" directory
+   - Example: "artifacts/model.joblib"
+   - Usage: This model file can be loaded later for predictions or evaluation
+   - Required: Yes
+
+Additional Outputs (via MLflow):
+   - Model logged to MLflow registry (accessible via MLflow UI)
+   - Training metrics logged to MLflow tracking
+   - Model artifacts stored in MLflow artifact store
+
+--------------------------------------------------------------------------------
+COMPONENT FUNCTIONALITY
+--------------------------------------------------------------------------------
+
+The model_training component performs the following operations:
+
+1. Data Loading:
+   - Reads the training data CSV file from the provided path
+   - Separates features (X) and target variable (y)
+   - Features: All columns except "TARGET"
+   - Target: The "TARGET" column
+
+2. Model Configuration:
+   - Algorithm: RandomForestRegressor (from scikit-learn)
+   - Hyperparameters:
+     * n_estimators: 200 (number of trees in the forest)
+     * random_state: 42 (for reproducibility)
+     * n_jobs: -1 (use all available CPU cores)
+
+3. Model Training:
+   - Fits the RandomForestRegressor on the training data
+   - Uses all available CPU cores for parallel processing
+
+4. Model Persistence:
+   - Saves the trained model to disk using joblib
+   - Stores model at: artifacts/model.joblib
+   - Returns the file path as output
+
+5. MLflow Integration:
+   - Logs model to MLflow model registry
+   - Logs hyperparameters:
+     * n_estimators: 200
+     * random_state: 42
+     * model_type: "RandomForestRegressor"
+   - Logs training metrics:
+     * train_r2_score: R-squared score on training data
+   - Saves model artifact to MLflow artifact store
+
+--------------------------------------------------------------------------------
+DATA FLOW
+--------------------------------------------------------------------------------
+
+Input Flow:
+   data_preprocessing component
+   └──> train_data.csv (scaled features + target)
+        └──> model_training component (INPUT)
+
+Output Flow:
+   model_training component
+   └──> model.joblib (OUTPUT)
+        └──> model_evaluation component (uses this model)
+
+--------------------------------------------------------------------------------
+EXAMPLE USAGE
+--------------------------------------------------------------------------------
+
+In the MLflow pipeline (Task 3), the component is called as:
+
+    train_path, test_path = data_preprocessing(raw_data_path)
+    model_path = model_training(train_data_path=train_path)
+    
+    # model_path will be: "artifacts/model.joblib"
+    # This path is then passed to model_evaluation component
+
+In a Kubeflow pipeline (if using Kubeflow), it would be:
+
+    training_task = model_training(
+        train_data=preprocessing_task.outputs["train_output"]
+    )
+
+--------------------------------------------------------------------------------
+TECHNICAL DETAILS
+--------------------------------------------------------------------------------
+
+Dependencies:
+   - pandas: For data loading and manipulation
+   - scikit-learn: For RandomForestRegressor
+   - joblib: For model serialization
+   - mlflow: For experiment tracking and model logging
+
+MLflow Tracking:
+   - Experiment Name: "boston-housing-mlops"
+   - Run Name: "model_training"
+   - Tracking URI: file:///tmp/mlruns (local file system)
+
+Model Characteristics:
+   - Type: Random Forest Regressor
+   - Purpose: Predict continuous target values (Boston housing prices)
+   - Training: Supervised learning on labeled training data
+   - Output: Trained model capable of making predictions on new data
+
+--------------------------------------------------------------------------------
+VALIDATION AND ERROR HANDLING
+--------------------------------------------------------------------------------
+
+The component expects:
+   - Valid CSV file at train_data_path
+   - CSV must contain "TARGET" column
+   - All features must be numeric (already scaled)
+   - No missing values (handled in preprocessing)
+
+If inputs are invalid:
+   - FileNotFoundError: If train_data_path doesn't exist
+   - KeyError: If "TARGET" column is missing
+   - ValueError: If data format is incorrect
+
+--------------------------------------------------------------------------------
+SUMMARY
+--------------------------------------------------------------------------------
+
+INPUT:
+   - train_data_path (str): Path to preprocessed training CSV
+
+OUTPUT:
+   - model_output (str): Path to saved trained model file
+
+PURPOSE:
+   Train a Random Forest Regressor model on the preprocessed training data,
+   save it to disk, and log all training information to MLflow for tracking
+   and reproducibility.
+
+================================================================================
+End of Explanation
+================================================================================
+

@@ -1,0 +1,15 @@
+# Kubeflow Pipeline Component: model_evaluation
+# Defined in: src/pipeline_components.py
+# Function: model_evaluation
+
+# Description: Evaluate the trained model and persist metrics using MLflow
+
+# Inputs:
+#   - test_data: str
+#   - model_artifact: str
+
+# Outputs:
+#   - metrics_output: str
+
+# Note: This component is implemented as a Python function.
+# For Task 3, MLflow is used for orchestration instead of Kubeflow.

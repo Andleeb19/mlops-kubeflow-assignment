@@ -1,0 +1,16 @@
+# Kubeflow Pipeline Component: data_extraction
+# Defined in: src/pipeline_components.py
+# Function: data_extraction
+
+# Description: Fetch the DVC tracked dataset from the remote Git repository
+
+# Inputs:
+#   - repo_url: str
+#   - data_path: str
+#   - rev: str
+
+# Outputs:
+#   - output_csv: str
+
+# Note: This component is implemented as a Python function.
+# For Task 3, MLflow is used for orchestration instead of Kubeflow.

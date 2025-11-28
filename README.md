@@ -7,6 +7,7 @@ This repo implements the Assignment #4 requirements for the Cloud MLOps course. 
 - **Dataset**: Boston Housing (regression target treated as continuous variable).
 - **Model**: RandomForestRegressor with standard scaling and an 80/20 train/test split.
 - **Pipeline**: Four Kubeflow components (data extraction, preprocessing, training, evaluation) orchestrated into a single DAG and compiled to `pipeline.yaml`.
+- **MLflow Integration**: MLflow is integrated into Kubeflow components for experiment tracking, model logging, and metrics tracking.
 - **CI**: Jenkins declarative pipeline validates dependency installation and pipeline compilation.
 
 ## Repository Structure
@@ -17,7 +18,8 @@ This repo implements the Assignment #4 requirements for the Cloud MLOps course. 
 ├── data/                    # Contains raw dataset tracked by DVC
 ├── src/
 │   ├── model_training.py    # Standalone training script (local runs)
-│   └── pipeline_components.py
+│   ├── mlflow_training.py   # Standalone MLflow training script
+│   └── pipeline_components.py  # Kubeflow components with MLflow integration
 ├── pipeline.py              # Kubeflow pipeline definition & compiler entrypoint
 ├── Jenkinsfile              # Three-stage Jenkins CI pipeline
 ├── Dockerfile               # Base image for custom components (optional)
@@ -49,6 +51,49 @@ This repo implements the Assignment #4 requirements for the Cloud MLOps course. 
    dvc status
    python src/model_training.py
    ```
+
+4. **Test MLflow tracking (optional)**
+   ```bash
+   python src/mlflow_training.py
+   mlflow ui  # View MLflow UI at http://localhost:5000
+   ```
+
+## MLflow Integration
+
+This project uses **MLflow** for experiment tracking and model management within Kubeflow components. MLflow provides:
+
+- **Experiment Tracking**: All runs are logged with parameters, metrics, and artifacts
+- **Model Logging**: Models are automatically logged and versioned
+- **Metrics Tracking**: Training and evaluation metrics are tracked across runs
+
+### MLflow Features Used:
+
+1. **In Kubeflow Components** (`src/pipeline_components.py`):
+   - `mlflow.set_experiment()`: Creates/uses experiment named "boston-housing-mlops"
+   - `mlflow.start_run()`: Tracks each component execution
+   - `mlflow.log_param()`: Logs hyperparameters (n_estimators, random_state, etc.)
+   - `mlflow.log_metric()`: Logs metrics (MAE, R2, RMSE, etc.)
+   - `mlflow.sklearn.log_model()`: Logs trained models
+   - `mlflow.log_artifact()`: Logs model files and metrics JSON
+
+2. **Standalone MLflow Script** (`src/mlflow_training.py`):
+   - Can be run independently to test MLflow tracking
+   - Useful for local development and testing
+
+### Viewing MLflow Experiments:
+
+```bash
+# Start MLflow UI
+mlflow ui
+
+# Access at http://localhost:5000
+# View experiments, runs, metrics, and models
+```
+
+### MLflow Tracking Location:
+
+- Default: `file:///tmp/mlruns` (local file system)
+- Can be changed to remote tracking server (MLflow server, S3, etc.)
 
 ## Kubeflow Pipeline Walkthrough
 
@@ -102,4 +147,5 @@ git add .
 git commit -m "Implement Kubeflow MLOps assignment"
 git push origin main
 ```
+
 

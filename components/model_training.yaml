@@ -1,0 +1,14 @@
+# Kubeflow Pipeline Component: model_training
+# Defined in: src/pipeline_components.py
+# Function: model_training
+
+# Description: Train a Random Forest model using MLflow
+
+# Inputs:
+#   - train_data: str
+
+# Outputs:
+#   - model_output: str
+
+# Note: This component is implemented as a Python function.
+# For Task 3, MLflow is used for orchestration instead of Kubeflow.

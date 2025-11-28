@@ -1,0 +1,15 @@
+# Kubeflow Pipeline Component: data_preprocessing
+# Defined in: src/pipeline_components.py
+# Function: data_preprocessing
+
+# Description: Clean and split the dataset using MLflow tracking
+
+# Inputs:
+#   - raw_data: str
+
+# Outputs:
+#   - train_output: str
+#   - test_output: str
+
+# Note: This component is implemented as a Python function.
+# For Task 3, MLflow is used for orchestration instead of Kubeflow.
