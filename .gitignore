@@ -1,0 +1,13 @@
+__pycache__/
+.pytest_cache/
+.vscode/
+.idea/
+*.pyc
+.DS_Store
+.env
+.python-version
+.dvc/tmp/
+.dvc/cache/
+data/raw_data.csv
+pipeline.yaml
+

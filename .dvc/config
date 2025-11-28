@@ -1,0 +1,4 @@
+[core]
+    remote = localremote
+['remote "localremote"']
+    url = C:/Users/maria/OneDrive/Desktop/dvc_remote_storage
