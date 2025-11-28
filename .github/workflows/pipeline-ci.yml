@@ -1,0 +1,84 @@
+name: MLOps Pipeline CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  pipeline-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Stage 1: Environment Setup
+    - name: Stage 1 - Checkout Code
+      uses: actions/checkout@v3
+      
+    - name: Stage 1 - Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Stage 1 - Install Dependencies
+      run: |
+        echo "Installing dependencies from requirements.txt..."
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        echo "Dependencies installed successfully"
+    
+    # Stage 2: Pipeline Compilation
+    - name: Stage 2 - Compile Kubeflow Pipeline
+      run: |
+        echo "Compiling Kubeflow pipeline..."
+        python pipeline_local.py
+        echo "Pipeline compiled successfully"
+        
+    - name: Stage 2 - Verify Pipeline YAML
+      run: |
+        echo "Verifying pipeline.yaml exists..."
+        if [ -f "pipeline.yaml" ]; then
+          echo "pipeline.yaml generated successfully"
+          echo "File size: $(wc -c < pipeline.yaml) bytes"
+        else
+          echo "ERROR: pipeline.yaml not found"
+          exit 1
+        fi
+    
+    # Stage 3: Pipeline Testing
+    - name: Stage 3 - Run Local Pipeline Test
+      run: |
+        echo "Running pipeline locally to validate functionality..."
+        python run_pipeline_locally.py
+        echo "Pipeline executed successfully"
+        
+    - name: Stage 3 - Verify Outputs
+      run: |
+        echo "Verifying pipeline outputs..."
+        if [ -f "outputs/metrics.json" ]; then
+          echo "Metrics file generated"
+          cat outputs/metrics.json
+        else
+          echo "ERROR: metrics.json not found"
+          exit 1
+        fi
+        
+    - name: Upload Pipeline Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: pipeline-artifacts
+        path: |
+          pipeline.yaml
+          outputs/metrics.json
+          models/*.pkl
+          
+    - name: Final Status
+      run: |
+        echo "=================================================="
+        echo "ALL STAGES COMPLETED SUCCESSFULLY"
+        echo "=================================================="
+        echo "Stage 1: Environment Setup "
+        echo "Stage 2: Pipeline Compilation "
+        echo "Stage 3: Pipeline Testing "
+        echo "=================================================="
